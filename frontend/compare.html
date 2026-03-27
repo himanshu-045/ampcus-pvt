@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PricePulse — Compare Products</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #050a0e;
+      --surface: #0b1219;
+      --surface2: #0f1c27;
+      --surface3: #152230;
+      --border: rgba(0,255,180,0.10);
+      --border2: rgba(0,255,180,0.25);
+      --accent: #00ffb4;
+      --accent2: #00bfff;
+      --accent3: #ff5e5e;
+      --accent4: #ffa500;
+      --text: #dff0ea;
+      --muted: #4a7060;
+      --dim: #1a3028;
+      --mono: 'Space Mono', monospace;
+      --sans: 'Syne', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body { font-family: var(--sans); background: var(--bg); color: var(--text); display: flex; overflow: hidden; }
+
+    /* ── SIDEBAR ── */
+    .sidebar { width: 240px; min-width: 240px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+    .sb-brand { padding: 24px 20px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+    .sb-logo { width: 36px; height: 36px; border: 1.5px solid var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 0 16px rgba(0,255,180,0.15); flex-shrink: 0; }
+    .sb-brand-text .name { font-family: var(--mono); font-size: 15px; font-weight: 700; color: var(--accent); }
+    .sb-brand-text .tag  { font-family: var(--mono); font-size: 9px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 3px; }
+    .sb-nav { flex: 1; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px; }
+    .sb-section-label { font-family: var(--mono); font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; padding: 10px 8px 6px; margin-top: 8px; }
+    .sb-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; transition: all 0.18s; border: 1px solid transparent; text-decoration: none; color: var(--muted); font-size: 13px; font-weight: 600; position: relative; }
+    .sb-item:hover { background: var(--surface2); color: var(--text); border-color: var(--border); }
+    .sb-item.active { background: rgba(0,255,180,0.07); color: var(--accent); border-color: rgba(0,255,180,0.18); }
+    .sb-item.active::before { content: ''; position: absolute; left: -1px; top: 20%; bottom: 20%; width: 2px; background: var(--accent); border-radius: 2px; }
+    .sb-item .icon { font-size: 15px; width: 20px; text-align: center; }
+    .sb-badge { margin-left: auto; background: rgba(0,255,180,0.12); color: var(--accent); font-family: var(--mono); font-size: 10px; padding: 2px 7px; border-radius: 10px; }
+    .sb-footer { padding: 16px 12px; border-top: 1px solid var(--border); }
+    .sb-user { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--border); }
+    .sb-avatar { width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: #050a0e; flex-shrink: 0; }
+    .sb-user-info .uname { font-size: 12px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 110px; }
+    .sb-user-info .urole { font-family: var(--mono); font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+    .logout-btn { margin-left: auto; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; padding: 4px; transition: color 0.2s; flex-shrink: 0; }
+    .logout-btn:hover { color: var(--accent3); }
+
+    /* ── MAIN ── */
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    .topbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .topbar-left h1 { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+    .topbar-left p  { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+    .content { flex: 1; overflow-y: auto; padding: 28px 32px; display: flex; flex-direction: column; gap: 24px; }
+    .content::-webkit-scrollbar { width: 4px; }
+    .content::-webkit-scrollbar-thumb { background: var(--dim); border-radius: 2px; }
+
+    /* ── INPUT SECTION ── */
+    .input-section {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .product-input-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+
+    .product-input-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    }
+
+    .product-input-card.card-a::before { background: linear-gradient(90deg, var(--accent), transparent); }
+    .product-input-card.card-b::before { background: linear-gradient(90deg, var(--accent2), transparent); }
+    .product-input-card.card-a.filled { border-color: rgba(0,255,180,0.3); }
+    .product-input-card.card-b.filled { border-color: rgba(0,191,255,0.3); }
+
+    .card-label {
+      display: flex; align-items: center; gap: 8px;
+      font-family: var(--mono); font-size: 10px; text-transform: uppercase;
+      letter-spacing: 2px; margin-bottom: 18px;
+    }
+    .card-label.a { color: var(--accent); }
+    .card-label.b { color: var(--accent2); }
+
+    .card-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .card-dot.a { background: var(--accent); box-shadow: 0 0 8px rgba(0,255,180,0.6); }
+    .card-dot.b { background: var(--accent2); box-shadow: 0 0 8px rgba(0,191,255,0.6); }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    .form-group label { font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; }
+    .form-group input {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 11px 14px; color: var(--text);
+      font-family: var(--mono); font-size: 12px; outline: none; transition: all 0.2s; width: 100%;
+    }
+    .form-group input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,255,180,0.07); }
+    .form-group input::placeholder { color: var(--dim); }
+    .form-group.b input:focus { border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(0,191,255,0.07); }
+
+    .platform-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 4px; font-family: var(--mono);
+      font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px;
+    }
+    .platform-badge.amazon   { background: rgba(255,153,0,0.1);  color: #ff9900; border: 1px solid rgba(255,153,0,0.2); }
+    .platform-badge.flipkart { background: rgba(40,116,240,0.1); color: #2874f0; border: 1px solid rgba(40,116,240,0.2); }
+    .platform-badge.myntra   { background: rgba(255,63,108,0.1); color: #ff3f6c; border: 1px solid rgba(255,63,108,0.2); }
+    .platform-badge.meesho   { background: rgba(244,51,151,0.1); color: #f43397; border: 1px solid rgba(244,51,151,0.2); }
+    .platform-badge.other    { background: rgba(0,255,180,0.08); color: var(--accent); border: 1px solid rgba(0,255,180,0.15); }
+
+    /* VS divider */
+    .vs-col {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 12px; padding-top: 60px;
+    }
+
+    .vs-badge {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      border: 2px solid var(--border2);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 15px; font-weight: 700;
+      color: var(--text);
+      background: var(--surface);
+      box-shadow: 0 0 24px rgba(0,255,180,0.1);
+    }
+
+    .vs-line { width: 1px; height: 40px; background: var(--border); }
+
+    .compare-btn {
+      padding: 11px 24px;
+      background: var(--accent); color: #050a0e;
+      border: none; border-radius: 10px;
+      font-family: var(--sans); font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; white-space: nowrap;
+    }
+    .compare-btn:hover { background: #00e6a2; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,255,180,0.25); }
+    .compare-btn:disabled { opacity: 0.4; pointer-events: none; }
+
+    /* ── ERROR BANNER ── */
+    .error-banner {
+      display: none;
+      background: rgba(255,94,94,0.07);
+      border: 1px solid rgba(255,94,94,0.3);
+      border-radius: 12px;
+      padding: 20px 24px;
+      align-items: center; gap: 16px;
+      animation: fadeUp 0.3s ease;
+    }
+    .error-banner.show { display: flex; }
+    .error-icon { font-size: 32px; flex-shrink: 0; }
+    .error-title { font-size: 16px; font-weight: 800; color: var(--accent3); margin-bottom: 4px; }
+    .error-desc  { font-family: var(--mono); font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+    /* ── RESULTS SECTION ── */
+    .results { display: none; flex-direction: column; gap: 20px; animation: fadeUp 0.4s ease; }
+    .results.show { display: flex; }
+
+    @keyframes fadeUp { from { opacity:0; transform: translateY(14px); } to { opacity:1; transform: translateY(0); } }
+
+    /* Winner banner */
+    .winner-banner {
+      border-radius: 14px; padding: 24px 28px;
+      display: flex; align-items: center; gap: 20px;
+      position: relative; overflow: hidden;
+    }
+
+    .winner-banner::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 80% at 10% 50%, rgba(0,255,180,0.08) 0%, transparent 70%);
+    }
+
+    .winner-banner.a { border: 1px solid rgba(0,255,180,0.3); background: rgba(0,255,180,0.04); }
+    .winner-banner.b { border: 1px solid rgba(0,191,255,0.3); background: rgba(0,191,255,0.04); }
+    .winner-banner.tie { border: 1px solid rgba(255,165,0,0.3); background: rgba(255,165,0,0.04); }
+
+    .winner-trophy { font-size: 42px; flex-shrink: 0; }
+
+    .winner-text { flex: 1; }
+    .winner-tag  { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 6px; }
+    .winner-banner.a .winner-tag { color: var(--accent); }
+    .winner-banner.b .winner-tag { color: var(--accent2); }
+    .winner-banner.tie .winner-tag { color: var(--accent4); }
+    .winner-name { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 6px; }
+    .winner-reason { font-family: var(--mono); font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+    .winner-price {
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .winner-price-val { font-family: var(--mono); font-size: 28px; font-weight: 700; letter-spacing: -1px; }
+    .winner-banner.a .winner-price-val { color: var(--accent); }
+    .winner-banner.b .winner-price-val { color: var(--accent2); }
+    .winner-banner.tie .winner-price-val { color: var(--accent4); }
+    .winner-price-label { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 4px; }
+
+    /* ── COMPARISON TABLE ── */
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 200px 1fr 1fr;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .cg-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--mono); font-size: 11px;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .cg-header.label { color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; background: var(--surface2); }
+    .cg-header.a { color: var(--accent); background: rgba(0,255,180,0.04); }
+    .cg-header.b { color: var(--accent2); background: rgba(0,191,255,0.04); }
+
+    .cg-row {
+      display: contents;
+    }
+
+    .cg-cell {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center;
+      font-size: 13px;
+    }
+
+    .cg-cell.label {
+      font-family: var(--mono); font-size: 11px; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 1px;
+      background: var(--surface2);
+    }
+
+    .cg-cell.a { background: rgba(0,255,180,0.02); }
+    .cg-cell.b { background: rgba(0,191,255,0.02); }
+
+    .cg-cell:last-child { border-bottom: none; }
+    .cg-row:last-child .cg-cell { border-bottom: none; }
+
+    .cg-val { font-family: var(--mono); font-weight: 700; }
+    .cg-val.better-a { color: var(--accent); }
+    .cg-val.better-b { color: var(--accent2); }
+    .cg-val.neutral  { color: var(--text); }
+
+    .win-chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 10px; font-family: var(--mono);
+      font-size: 9px; font-weight: 700; margin-left: 8px;
+    }
+    .win-chip.a { background: rgba(0,255,180,0.12); color: var(--accent); }
+    .win-chip.b { background: rgba(0,191,255,0.12); color: var(--accent2); }
+
+    /* ── CHART COMPARISON ── */
+    .chart-compare-section {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden;
+    }
+
+    .ccs-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 22px; border-bottom: 1px solid var(--border);
+    }
+
+    .ccs-title { font-size: 14px; font-weight: 700; }
+
+    .duration-tabs { display: flex; gap: 4px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 3px; }
+    .dur-btn { padding: 6px 14px; border: none; background: transparent; color: var(--muted); font-family: var(--mono); font-size: 11px; cursor: pointer; border-radius: 5px; transition: all 0.18s; }
+    .dur-btn.active { background: var(--accent); color: #050a0e; font-weight: 700; }
+
+    .chart-legend { display: flex; gap: 20px; padding: 12px 22px; border-bottom: 1px solid var(--border); }
+    .legend-item { display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+    .legend-line { width: 24px; height: 2px; border-radius: 1px; }
+    .legend-line.a { background: var(--accent); }
+    .legend-line.b { background: var(--accent2); }
+
+    .chart-canvas-wrap { padding: 20px; height: 280px; }
+    canvas#compareChart { width: 100% !important; height: 100% !important; }
+
+    /* ── SCORE CARDS ── */
+    .score-row-grid {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .score-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 22px;
+      transition: border-color 0.2s;
+    }
+    .score-card.a { border-top: 2px solid var(--accent); }
+    .score-card.b { border-top: 2px solid var(--accent2); }
+
+    .sc-name { font-size: 14px; font-weight: 700; margin-bottom: 14px; line-height: 1.3; }
+
+    .sc-metric { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .sc-metric-label { font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+    .sc-metric-val { font-family: var(--mono); font-size: 12px; font-weight: 700; }
+
+    .sc-bar-wrap { height: 4px; background: var(--surface2); border-radius: 2px; margin-bottom: 10px; overflow: hidden; }
+    .sc-bar { height: 100%; border-radius: 2px; transition: width 1.2s ease; }
+    .sc-bar.a { background: linear-gradient(90deg, var(--accent), #00cc90); }
+    .sc-bar.b { background: linear-gradient(90deg, var(--accent2), #0090cc); }
+
+    .sc-total { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+    .sc-total-label { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+    .sc-total-val { font-size: 24px; font-weight: 800; font-family: var(--mono); }
+    .sc-total-val.a { color: var(--accent); }
+    .sc-total-val.b { color: var(--accent2); }
+
+    .vs-center-col { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .vs-big { font-family: var(--mono); font-size: 18px; font-weight: 700; color: var(--muted); }
+    .vs-divider { width: 1px; height: 30px; background: var(--border); }
+
+    /* ── TOAST ── */
+    .toast { position: fixed; bottom: 24px; right: 24px; z-index: 999; background: var(--surface); border: 1px solid var(--border2); border-radius: 10px; padding: 14px 20px; font-family: var(--mono); font-size: 12px; color: var(--accent); display: none; align-items: center; gap: 10px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+    .toast.show { display: flex; animation: fadeUp 0.3s ease; }
+
+    @media (max-width: 1100px) { .comparison-grid { grid-template-columns: 160px 1fr 1fr; } }
+    @media (max-width: 900px) {
+      .input-section { grid-template-columns: 1fr; }
+      .vs-col { flex-direction: row; padding-top: 0; }
+      .vs-line { width: 40px; height: 1px; }
+      .comparison-grid { grid-template-columns: 1fr 1fr; }
+      .comparison-grid .cg-cell.label { display: none; }
+      .score-row-grid { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-logo">⚡</div>
+    <div class="sb-brand-text">
+      <div class="name">PricePulse</div>
+      <div class="tag">Pricing Engine</div>
+    </div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section-label">Main</div>
+    <a class="sb-item" href="dashboard.html"><span class="icon">📊</span> Dashboard</a>
+    <a class="sb-item" href="track.html"><span class="icon">📦</span> Track Products</a>
+    <a class="sb-item active" href="compare.html"><span class="icon">⚖️</span> Compare Products</a>
+    <!-- <a class="sb-item" href="#"><span class="icon">💡</span> Recommendations</a> -->
+    <div class="sb-section-label">Analytics</div>
+    <a class="sb-item" href="#"><span class="icon">📈</span> Price History</a>
+    <a class="sb-item" href="#"><span class="icon">🎯</span> Demand Model</a>
+    <a class="sb-item" href="#"><span class="icon">⚠️</span> Alerts</a>
+    <div class="sb-section-label">Settings</div>
+    <a class="sb-item" href="#"><span class="icon">⚙️</span> Settings</a>
+  </nav>
+  <div class="sb-footer">
+    <div class="sb-user">
+      <div class="sb-avatar" id="sidebarAvatar">U</div>
+      <div class="sb-user-info">
+        <div class="uname" id="sidebarName">Loading...</div>
+        <div class="urole" id="sidebarRole">user</div>
+      </div>
+      <button class="logout-btn" onclick="logout()" title="Logout">⏻</button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>Compare <span style="color:var(--accent)">Products</span></h1>
+      <p>// compare two similar products and find the best deal</p>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- INPUT SECTION -->
+    <div class="input-section">
+
+      <!-- Product A -->
+      <div class="product-input-card card-a" id="cardA">
+        <div class="card-label a"><div class="card-dot a"></div> Product A</div>
+        <div class="form-group">
+          <label>Product Name *</label>
+          <input type="text" id="nameA" placeholder="e.g. iPhone 15 Pro 256GB" oninput="updateCard('a')"/>
+        </div>
+        <div class="form-group">
+          <label>Product URL</label>
+          <input type="url" id="urlA" placeholder="https://amazon.in/..." oninput="detectPlatform('a', this.value)"/>
+        </div>
+        <div class="form-group">
+          <label>Current Price (₹) *</label>
+          <input type="number" id="priceA" placeholder="e.g. 134900" oninput="updateCard('a')"/>
+        </div>
+        <div class="form-group">
+          <label>Category *</label>
+          <input type="text" id="categoryA" placeholder="e.g. smartphone, laptop, headphones" oninput="updateCard('a')"/>
+        </div>
+        <div class="form-group">
+          <label>Original / MRP (₹)</label>
+          <input type="number" id="mrpA" placeholder="e.g. 149900"/>
+        </div>
+        <div id="platformBadgeA" style="margin-top:4px"></div>
+      </div>
+
+      <!-- VS Column -->
+      <div class="vs-col">
+        <div class="vs-line"></div>
+        <div class="vs-badge">VS</div>
+        <div class="vs-line"></div>
+        <button class="compare-btn" id="compareBtn" onclick="runComparison()" disabled>
+          Compare →
+        </button>
+      </div>
+
+      <!-- Product B -->
+      <div class="product-input-card card-b" id="cardB">
+        <div class="card-label b"><div class="card-dot b"></div> Product B</div>
+        <div class="form-group b">
+          <label>Product Name *</label>
+          <input type="text" id="nameB" placeholder="e.g. Samsung Galaxy S24 256GB" oninput="updateCard('b')"/>
+        </div>
+        <div class="form-group b">
+          <label>Product URL</label>
+          <input type="url" id="urlB" placeholder="https://flipkart.com/..." oninput="detectPlatform('b', this.value)"/>
+        </div>
+        <div class="form-group b">
+          <label>Current Price (₹) *</label>
+          <input type="number" id="priceB" placeholder="e.g. 79999" oninput="updateCard('b')"/>
+        </div>
+        <div class="form-group b">
+          <label>Category *</label>
+          <input type="text" id="categoryB" placeholder="e.g. smartphone, laptop, headphones" oninput="updateCard('b')"/>
+        </div>
+        <div class="form-group b">
+          <label>Original / MRP (₹)</label>
+          <input type="number" id="mrpB" placeholder="e.g. 89999"/>
+        </div>
+        <div id="platformBadgeB" style="margin-top:4px"></div>
+      </div>
+    </div>
+
+    <!-- ERROR BANNER -->
+    <div class="error-banner" id="errorBanner">
+      <div class="error-icon">🚫</div>
+      <div>
+        <div class="error-title">Product Categories Don't Match!</div>
+        <div class="error-desc" id="errorDesc">
+          You're trying to compare products from different categories. Please compare similar products for a meaningful analysis.
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="results" id="results">
+
+      <!-- Winner Banner -->
+      <div class="winner-banner" id="winnerBanner">
+        <div class="winner-trophy" id="winnerTrophy">🏆</div>
+        <div class="winner-text">
+          <div class="winner-tag" id="winnerTag">Our Recommendation</div>
+          <div class="winner-name" id="winnerName">—</div>
+          <div class="winner-reason" id="winnerReason">—</div>
+        </div>
+        <div class="winner-price">
+          <div class="winner-price-val" id="winnerPriceVal">—</div>
+          <div class="winner-price-label">Best Price</div>
+        </div>
+      </div>
+
+      <!-- Score Cards -->
+      <div class="score-row-grid">
+        <div class="score-card a">
+          <div class="sc-name" id="scNameA">Product A</div>
+          <div id="scMetricsA"></div>
+          <div class="sc-total">
+            <span class="sc-total-label">Overall Score</span>
+            <span class="sc-total-val a" id="scScoreA">—</span>
+          </div>
+        </div>
+
+        <div class="vs-center-col">
+          <div class="vs-big">VS</div>
+          <div class="vs-divider"></div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--muted);text-align:center;text-transform:uppercase;letter-spacing:1px">Score<br>Difference</div>
+          <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--text)" id="scoreDiff">—</div>
+        </div>
+
+        <div class="score-card b">
+          <div class="sc-name" id="scNameB">Product B</div>
+          <div id="scMetricsB"></div>
+          <div class="sc-total">
+            <span class="sc-total-label">Overall Score</span>
+            <span class="sc-total-val b" id="scScoreB">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Comparison Table -->
+      <div class="comparison-grid" id="comparisonTable">
+        <!-- filled dynamically -->
+      </div>
+
+      <!-- Dual Chart -->
+      <div class="chart-compare-section">
+        <div class="ccs-header">
+          <div class="ccs-title">📈 Price History Comparison</div>
+          <div class="duration-tabs">
+            <button class="dur-btn active" onclick="changeDuration(30, this)">1M</button>
+            <button class="dur-btn" onclick="changeDuration(180, this)">6M</button>
+            <button class="dur-btn" onclick="changeDuration(365, this)">1Y</button>
+          </div>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-line a"></div><span id="legendA">Product A</span></div>
+          <div class="legend-item"><div class="legend-line b"></div><span id="legendB">Product B</span></div>
+        </div>
+        <div class="chart-canvas-wrap">
+          <canvas id="compareChart"></canvas>
+        </div>
+      </div>
+
+    </div><!-- end results -->
+
+  </div><!-- end content -->
+</div>
+
+<div class="toast" id="toast"><span id="toastMsg"></span></div>
+
+<script>
+  // ── Auth ─────────────────────────────────────────────────
+  const token = localStorage.getItem('pp_token');
+  const user  = JSON.parse(localStorage.getItem('pp_user') || 'null');
+  if (!token || !user) { window.location.href = '/'; }
+
+  document.getElementById('sidebarName').textContent   = user?.name || 'User';
+  document.getElementById('sidebarRole').textContent   = user?.role || 'user';
+  document.getElementById('sidebarAvatar').textContent = (user?.name || 'U').charAt(0).toUpperCase();
+
+  function logout() {
+    localStorage.removeItem('pp_token');
+    localStorage.removeItem('pp_user');
+    window.location.href = '/';
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  // ── State ─────────────────────────────────────────────────
+  let currentDays = 30;
+  let historyA = [], historyB = [];
+
+  // ── Platform Detection ────────────────────────────────────
+  function detectPlatform(side, url) {
+    const u = url.toLowerCase();
+    let platform = 'other';
+    if (u.includes('amazon'))   platform = 'amazon';
+    else if (u.includes('flipkart')) platform = 'flipkart';
+    else if (u.includes('myntra'))   platform = 'myntra';
+    else if (u.includes('meesho'))   platform = 'meesho';
+
+    const labels = { amazon:'📦 Amazon', flipkart:'🛒 Flipkart', myntra:'👗 Myntra', meesho:'🏷 Meesho', other:'🌐 Other' };
+    const badge  = document.getElementById(`platformBadge${side.toUpperCase()}`);
+    if (url.length > 5) {
+      badge.innerHTML = `<span class="platform-badge ${platform}">${labels[platform]}</span>`;
+    } else {
+      badge.innerHTML = '';
+    }
+  }
+
+  // ── Enable compare button when both cards filled ──────────
+  function updateCard(side) {
+    const nameA  = document.getElementById('nameA').value.trim();
+    const priceA = document.getElementById('priceA').value;
+    const catA   = document.getElementById('categoryA').value.trim();
+    const nameB  = document.getElementById('nameB').value.trim();
+    const priceB = document.getElementById('priceB').value;
+    const catB   = document.getElementById('categoryB').value.trim();
+
+    const btn = document.getElementById('compareBtn');
+    btn.disabled = !(nameA && priceA && catA && nameB && priceB && catB);
+
+    const cardId = side === 'a' ? 'cardA' : 'cardB';
+    const name   = side === 'a' ? nameA : nameB;
+    const price  = side === 'a' ? priceA : priceB;
+    const cat    = side === 'a' ? catA : catB;
+
+    document.getElementById(cardId).classList.toggle('filled', !!(name && price && cat));
+  }
+
+  // ── Category Similarity Check ─────────────────────────────
+  const CATEGORY_GROUPS = {
+    smartphone:  ['smartphone','phone','mobile','iphone','android','galaxy','pixel','oneplus','poco','redmi'],
+    laptop:      ['laptop','notebook','macbook','chromebook','ultrabook','computer'],
+    headphones:  ['headphone','earphone','earbuds','airpods','headset','tws','audio'],
+    tv:          ['tv','television','oled','qled','smart tv','display','monitor'],
+    tablet:      ['tablet','ipad','android tab'],
+    camera:      ['camera','dslr','mirrorless','gopro','webcam'],
+    watch:       ['watch','smartwatch','band','fitness tracker'],
+    speaker:     ['speaker','soundbar','bluetooth speaker'],
+    appliance:   ['washing machine','refrigerator','fridge','ac','air conditioner','microwave','mixer'],
+    shoe:        ['shoe','sneaker','boot','sandal','footwear','slipper'],
+    clothing:    ['shirt','tshirt','jeans','jacket','kurta','dress','saree','clothing','apparel'],
+    bag:         ['bag','backpack','purse','wallet','handbag'],
+  };
+
+  function getCategory(input) {
+    const lower = input.toLowerCase().trim();
+    for (const [group, keywords] of Object.entries(CATEGORY_GROUPS)) {
+      if (keywords.some(k => lower.includes(k))) return group;
+    }
+    return lower; // use as-is for custom categories
+  }
+
+  function categoriesMatch(catA, catB) {
+    const gA = getCategory(catA);
+    const gB = getCategory(catB);
+    if (gA === gB) return true;
+    // Allow exact match on raw input too
+    return catA.toLowerCase().trim() === catB.toLowerCase().trim();
+  }
+
+  // ── Generate mock price history ───────────────────────────
+  function genHistory(basePrice, months = 12) {
+    const history = [];
+    const now     = new Date();
+    const days    = months * 30;
+
+    for (let i = days; i >= 0; i -= 3) {
+      const date  = new Date(now);
+      date.setDate(date.getDate() - i);
+      const fl    = (Math.random() - 0.5) * 0.22;
+      const month = date.getMonth();
+      const seas  = (month === 10 || month === 11) ? -0.07 : month === 0 ? 0.04 : 0;
+      const price = Math.max(Math.round(basePrice * (1 + fl + seas)), basePrice * 0.6);
+      history.push({ price, date });
+    }
+
+    return history;
+  }
+
+  // ── Score a product (0-100) ───────────────────────────────
+  function scoreProduct(price, mrp, history) {
+    const prices   = history.map(h => h.price);
+    const minPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+    const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
+
+    // Scoring factors (each out of 25)
+    const discountScore  = mrp > 0 ? Math.min(25, ((mrp - price) / mrp) * 100) : 15;
+    const vsAvgScore     = Math.min(25, Math.max(0, 25 - ((price - avgPrice) / avgPrice) * 50));
+    const vsMinScore     = Math.min(25, Math.max(0, 25 - ((price - minPrice) / (maxPrice - minPrice + 1)) * 25));
+
+    const recent  = prices.slice(-7);
+    const recentAvg = recent.reduce((a, b) => a + b, 0) / recent.length;
+    const trendScore = recentAvg <= avgPrice ? 20 : Math.max(0, 20 - ((recentAvg - avgPrice) / avgPrice) * 40);
+
+    const total = Math.round(discountScore + vsAvgScore + vsMinScore + trendScore);
+
+    return {
+      total: Math.min(100, total),
+      metrics: {
+        discount:  { label: 'Discount from MRP', val: mrp > 0 ? Math.round(((mrp - price) / mrp) * 100) + '%' : 'N/A', score: Math.round(discountScore), max: 25 },
+        vsAvg:     { label: 'vs Historical Avg', val: price <= avgPrice ? `₹${Math.round(avgPrice - price).toLocaleString('en-IN')} below avg` : `₹${Math.round(price - avgPrice).toLocaleString('en-IN')} above avg`, score: Math.round(vsAvgScore), max: 25 },
+        vsMin:     { label: 'Distance from Low',  val: Math.round(((price - minPrice) / minPrice) * 100) + '% above ATL', score: Math.round(vsMinScore), max: 25 },
+        trend:     { label: 'Price Trend',         val: recentAvg <= avgPrice ? '📉 Falling' : '📈 Rising', score: Math.round(trendScore), max: 20 },
+      },
+      stats: { minPrice, maxPrice, avgPrice: Math.round(avgPrice) },
+    };
+  }
+
+  // ── Run Comparison ────────────────────────────────────────
+  function runComparison() {
+    const nameA  = document.getElementById('nameA').value.trim();
+    const nameB  = document.getElementById('nameB').value.trim();
+    const priceA = parseFloat(document.getElementById('priceA').value);
+    const priceB = parseFloat(document.getElementById('priceB').value);
+    const catA   = document.getElementById('categoryA').value.trim();
+    const catB   = document.getElementById('categoryB').value.trim();
+    const mrpA   = parseFloat(document.getElementById('mrpA').value) || 0;
+    const mrpB   = parseFloat(document.getElementById('mrpB').value) || 0;
+
+    // Hide previous results
+    document.getElementById('results').classList.remove('show');
+    document.getElementById('errorBanner').classList.remove('show');
+
+    // Category check
+    if (!categoriesMatch(catA, catB)) {
+      document.getElementById('errorDesc').textContent =
+        `"${catA}" and "${catB}" are different product categories. Please compare similar products (e.g. two smartphones, two laptops) for a meaningful analysis.`;
+      document.getElementById('errorBanner').classList.add('show');
+      document.getElementById('errorBanner').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    // Generate histories
+    historyA = genHistory(priceA, 12);
+    historyB = genHistory(priceB, 12);
+
+    const scoreA = scoreProduct(priceA, mrpA, historyA);
+    const scoreB = scoreProduct(priceB, mrpB, historyB);
+
+    // Winner
+    renderWinner(nameA, nameB, priceA, priceB, scoreA, scoreB);
+
+    // Score cards
+    renderScoreCard('A', nameA, priceA, mrpA, scoreA);
+    renderScoreCard('B', nameB, priceB, mrpB, scoreB);
+
+    // Score diff
+    const diff = Math.abs(scoreA.total - scoreB.total);
+    document.getElementById('scoreDiff').textContent = diff + ' pts';
+
+    // Comparison table
+    renderTable(nameA, nameB, priceA, priceB, mrpA, mrpB, scoreA, scoreB);
+
+    // Chart legends
+    document.getElementById('legendA').textContent = nameA.length > 25 ? nameA.substring(0, 25) + '...' : nameA;
+    document.getElementById('legendB').textContent = nameB.length > 25 ? nameB.substring(0, 25) + '...' : nameB;
+
+    // Show results
+    document.getElementById('results').classList.add('show');
+    setTimeout(() => drawCompareChart(currentDays), 100);
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // ── Render Winner ─────────────────────────────────────────
+  function renderWinner(nameA, nameB, priceA, priceB, scoreA, scoreB) {
+    const banner = document.getElementById('winnerBanner');
+    const trophy = document.getElementById('winnerTrophy');
+    const tag    = document.getElementById('winnerTag');
+    const name   = document.getElementById('winnerName');
+    const reason = document.getElementById('winnerReason');
+    const priceV = document.getElementById('winnerPriceVal');
+
+    if (scoreA.total === scoreB.total) {
+      banner.className = 'winner-banner tie';
+      trophy.textContent = '🤝';
+      tag.textContent    = 'It\'s a Tie!';
+      name.textContent   = 'Both products are equally good value';
+      reason.textContent = `Both products score ${scoreA.total}/100. Go with whichever fits your budget or brand preference.`;
+      priceV.textContent = `₹${Math.min(priceA, priceB).toLocaleString('en-IN')}`;
+    } else if (scoreA.total > scoreB.total) {
+      banner.className = 'winner-banner a';
+      trophy.textContent = '🏆';
+      tag.textContent  = '✅ We Recommend — Product A';
+      name.textContent = nameA;
+      reason.textContent = buildReason(nameA, priceA, scoreA, nameB, priceB, scoreB);
+      priceV.textContent = `₹${priceA.toLocaleString('en-IN')}`;
+    } else {
+      banner.className = 'winner-banner b';
+      trophy.textContent = '🏆';
+      tag.textContent  = '✅ We Recommend — Product B';
+      name.textContent = nameB;
+      reason.textContent = buildReason(nameB, priceB, scoreB, nameA, priceA, scoreA);
+      priceV.textContent = `₹${priceB.toLocaleString('en-IN')}`;
+    }
+  }
+
+  function buildReason(winName, winPrice, winScore, loseName, losePrice, loseScore) {
+    const priceDiff = Math.abs(winPrice - losePrice);
+    const scoreDiff = winScore.total - loseScore.total;
+    const cheaper   = winPrice < losePrice;
+    const parts = [];
+
+    if (cheaper) parts.push(`₹${priceDiff.toLocaleString('en-IN')} cheaper than ${loseName}`);
+    if (winScore.metrics.discount.score > loseScore.metrics.discount.score) parts.push('better discount from MRP');
+    if (winScore.metrics.vsMin.score > loseScore.metrics.vsMin.score) parts.push('closer to its all-time low');
+    if (winScore.metrics.trend.val.includes('📉')) parts.push('price is currently falling — good time to buy');
+
+    const base = parts.length > 0
+      ? `Scores ${winScore.total}/100 vs ${loseScore.total}/100. It is ${parts.join(', ')}.`
+      : `Scores ${winScore.total}/100 — ${scoreDiff} points ahead overall.`;
+
+    return base;
+  }
+
+  // ── Render Score Card ─────────────────────────────────────
+  function renderScoreCard(side, name, price, mrp, score) {
+    document.getElementById(`scName${side}`).textContent  = name;
+    document.getElementById(`scScore${side}`).textContent = score.total + '/100';
+
+    const html = Object.values(score.metrics).map(m => `
+      <div class="sc-metric">
+        <span class="sc-metric-label">${m.label}</span>
+        <span class="sc-metric-val" style="color:var(--${side === 'A' ? 'accent' : 'accent2'})">${m.val}</span>
+      </div>
+      <div class="sc-bar-wrap">
+        <div class="sc-bar ${side.toLowerCase()}" style="width:${(m.score / m.max) * 100}%"></div>
+      </div>
+    `).join('');
+
+    document.getElementById(`scMetrics${side}`).innerHTML = html;
+  }
+
+  // ── Render Comparison Table ───────────────────────────────
+  function renderTable(nameA, nameB, priceA, priceB, mrpA, mrpB, scoreA, scoreB) {
+    const shortA = nameA.length > 20 ? nameA.substring(0, 20) + '…' : nameA;
+    const shortB = nameB.length > 20 ? nameB.substring(0, 20) + '…' : nameB;
+
+    const discA = mrpA > 0 ? Math.round(((mrpA - priceA) / mrpA) * 100) : null;
+    const discB = mrpB > 0 ? Math.round(((mrpB - priceB) / mrpB) * 100) : null;
+
+    const rows = [
+      {
+        label: 'Current Price',
+        a: `₹${priceA.toLocaleString('en-IN')}`,
+        b: `₹${priceB.toLocaleString('en-IN')}`,
+        winner: priceA < priceB ? 'a' : priceB < priceA ? 'b' : null,
+      },
+      {
+        label: 'MRP / Original',
+        a: mrpA > 0 ? `₹${mrpA.toLocaleString('en-IN')}` : 'N/A',
+        b: mrpB > 0 ? `₹${mrpB.toLocaleString('en-IN')}` : 'N/A',
+        winner: null,
+      },
+      {
+        label: 'Discount %',
+        a: discA != null ? discA + '%' : 'N/A',
+        b: discB != null ? discB + '%' : 'N/A',
+        winner: discA != null && discB != null ? (discA > discB ? 'a' : discB > discA ? 'b' : null) : null,
+      },
+      {
+        label: 'All-Time Low',
+        a: `₹${scoreA.stats.minPrice.toLocaleString('en-IN')}`,
+        b: `₹${scoreB.stats.minPrice.toLocaleString('en-IN')}`,
+        winner: null,
+      },
+      {
+        label: 'Avg Price (1Y)',
+        a: `₹${scoreA.stats.avgPrice.toLocaleString('en-IN')}`,
+        b: `₹${scoreB.stats.avgPrice.toLocaleString('en-IN')}`,
+        winner: null,
+      },
+      {
+        label: 'vs Avg Price',
+        a: priceA <= scoreA.stats.avgPrice ? '✅ Below avg' : '⚠ Above avg',
+        b: priceB <= scoreB.stats.avgPrice ? '✅ Below avg' : '⚠ Above avg',
+        winner: priceA <= scoreA.stats.avgPrice && priceB > scoreB.stats.avgPrice ? 'a' : priceB <= scoreB.stats.avgPrice && priceA > scoreA.stats.avgPrice ? 'b' : null,
+      },
+      {
+        label: 'Price Trend',
+        a: scoreA.metrics.trend.val,
+        b: scoreB.metrics.trend.val,
+        winner: null,
+      },
+      {
+        label: 'Overall Score',
+        a: scoreA.total + '/100',
+        b: scoreB.total + '/100',
+        winner: scoreA.total > scoreB.total ? 'a' : scoreB.total > scoreA.total ? 'b' : null,
+      },
+    ];
+
+    const table = document.getElementById('comparisonTable');
+    table.innerHTML = `
+      <div class="cg-header label">Metric</div>
+      <div class="cg-header a"><div class="card-dot a" style="width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0"></div>${shortA}</div>
+      <div class="cg-header b"><div class="card-dot b" style="width:7px;height:7px;border-radius:50%;background:var(--accent2);flex-shrink:0"></div>${shortB}</div>
+      ${rows.map(r => `
+        <div class="cg-cell label">${r.label}</div>
+        <div class="cg-cell a">
+          <span class="cg-val ${r.winner === 'a' ? 'better-a' : 'neutral'}">${r.a}</span>
+          ${r.winner === 'a' ? '<span class="win-chip a">★ Better</span>' : ''}
+        </div>
+        <div class="cg-cell b">
+          <span class="cg-val ${r.winner === 'b' ? 'better-b' : 'neutral'}">${r.b}</span>
+          ${r.winner === 'b' ? '<span class="win-chip b">★ Better</span>' : ''}
+        </div>
+      `).join('')}
+    `;
+  }
+
+  // ── Draw Comparison Chart ──────────────────────────────────
+  function changeDuration(days, btn) {
+    currentDays = days;
+    document.querySelectorAll('.dur-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    drawCompareChart(days);
+  }
+
+  function drawCompareChart(days) {
+    const canvas = document.getElementById('compareChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    const wrap = canvas.parentElement;
+    canvas.width  = wrap.clientWidth  - 40;
+    canvas.height = wrap.clientHeight - 40;
+
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - days);
+
+    const filtA = historyA.filter(p => new Date(p.date) >= cutoff).sort((a,b) => new Date(a.date) - new Date(b.date));
+    const filtB = historyB.filter(p => new Date(p.date) >= cutoff).sort((a,b) => new Date(a.date) - new Date(b.date));
+
+    if (filtA.length < 2 || filtB.length < 2) return;
+
+    const PAD  = { top: 20, right: 20, bottom: 40, left: 75 };
+    const cW   = W - PAD.left - PAD.right;
+    const cH   = H - PAD.top  - PAD.bottom;
+
+    const allP   = [...filtA.map(p => p.price), ...filtB.map(p => p.price)];
+    const minV   = Math.min(...allP);
+    const maxV   = Math.max(...allP);
+    const range  = maxV - minV || 1;
+    const padded = range * 0.1;
+
+    const yPos = v => PAD.top + cH - ((v - (minV - padded)) / (range + padded * 2)) * cH;
+    const xPosFor = (arr, i) => PAD.left + (i / (arr.length - 1)) * cW;
+
+    // Grid
+    for (let i = 0; i <= 4; i++) {
+      const y   = PAD.top + (i / 4) * cH;
+      const val = (minV - padded) + (range + padded * 2) * (1 - i / 4);
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(0,255,180,0.05)';
+      ctx.lineWidth = 1;
+      ctx.moveTo(PAD.left, y); ctx.lineTo(PAD.left + cW, y);
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(90,120,112,0.7)';
+      ctx.font = '10px Space Mono, monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText('₹' + Math.round(val / 1000) + 'K', PAD.left - 8, y + 4);
+    }
+
+    // X labels
+    const labelCount = Math.min(6, filtA.length);
+    ctx.fillStyle = 'rgba(90,120,112,0.7)';
+    ctx.font = '9px Space Mono, monospace';
+    ctx.textAlign = 'center';
+    for (let i = 0; i < labelCount; i++) {
+      const idx  = Math.floor((i / (labelCount - 1)) * (filtA.length - 1));
+      const date = new Date(filtA[idx].date);
+      ctx.fillText(date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }), xPosFor(filtA, idx), H - 8);
+    }
+
+    // Draw line helper
+    function drawLine(data, color, dashed) {
+      ctx.beginPath();
+      ctx.setLineDash(dashed ? [5, 4] : []);
+      ctx.strokeStyle = color;
+      ctx.lineWidth   = 2;
+      ctx.lineJoin    = 'round'; ctx.lineCap = 'round';
+      data.forEach((p, i) => {
+        if (i === 0) ctx.moveTo(xPosFor(data, i), yPos(p.price));
+        else         ctx.lineTo(xPosFor(data, i), yPos(p.price));
+      });
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // Gradient A
+    const gradA = ctx.createLinearGradient(0, PAD.top, 0, PAD.top + cH);
+    gradA.addColorStop(0, 'rgba(0,255,180,0.15)'); gradA.addColorStop(1, 'rgba(0,255,180,0)');
+    ctx.beginPath();
+    filtA.forEach((p, i) => { if (i === 0) ctx.moveTo(xPosFor(filtA, i), yPos(p.price)); else ctx.lineTo(xPosFor(filtA, i), yPos(p.price)); });
+    ctx.lineTo(xPosFor(filtA, filtA.length - 1), PAD.top + cH);
+    ctx.lineTo(PAD.left, PAD.top + cH);
+    ctx.closePath(); ctx.fillStyle = gradA; ctx.fill();
+
+    drawLine(filtB, 'rgba(0,191,255,0.7)', true);
+    drawLine(filtA, '#00ffb4', false);
+
+    // Endpoint dots
+    [[filtA, '#00ffb4'], [filtB, '#00bfff']].forEach(([data, color]) => {
+      const last = data[data.length - 1];
+      ctx.beginPath();
+      ctx.arc(xPosFor(data, data.length - 1), yPos(last.price), 4, 0, Math.PI * 2);
+      ctx.fillStyle = color; ctx.fill();
+      ctx.strokeStyle = '#050a0e'; ctx.lineWidth = 2; ctx.stroke();
+    });
+  }
+
+  window.addEventListener('resize', () => {
+    if (document.getElementById('results').classList.contains('show')) {
+      drawCompareChart(currentDays);
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PricePulse — Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #050a0e; --surface: #0b1219; --surface2: #101d28;
+      --border: rgba(0,255,180,0.12); --accent: #00ffb4;
+      --text: #e8f4f0; --muted: #5a7a70;
+      --mono: 'Space Mono', monospace; --sans: 'Syne', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    .navbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 40px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .logo { width: 36px; height: 36px; border: 1.5px solid var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .brand-name { font-family: var(--mono); font-size: 18px; font-weight: 700; color: var(--accent); }
+
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .user-badge {
+      font-family: var(--mono); font-size: 12px; color: var(--muted);
+      background: var(--surface2); border: 1px solid var(--border);
+      padding: 6px 14px; border-radius: 20px;
+    }
+    .user-badge span { color: var(--accent); }
+    .logout-btn {
+      font-family: var(--mono); font-size: 12px;
+      background: transparent; border: 1px solid rgba(255,94,94,0.3);
+      color: #ff5e5e; padding: 6px 14px; border-radius: 6px;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .logout-btn:hover { background: rgba(255,94,94,0.08); }
+
+    .main { padding: 48px 40px; }
+
+    .welcome {
+      margin-bottom: 40px;
+    }
+    .welcome h1 { font-size: 32px; font-weight: 800; letter-spacing: -1px; margin-bottom: 6px; }
+    .welcome h1 span { color: var(--accent); }
+    .welcome p { font-family: var(--mono); font-size: 13px; color: var(--muted); }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      transition: border-color 0.2s;
+    }
+    .card:hover { border-color: rgba(0,255,180,0.3); }
+    .card-label { font-family: var(--mono); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
+    .card-value { font-size: 32px; font-weight: 800; color: var(--accent); font-family: var(--mono); }
+    .card-sub { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+    .coming-soon {
+      background: var(--surface);
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      padding: 60px;
+      text-align: center;
+    }
+    .coming-soon h2 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+    .coming-soon p { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="brand">
+      <div class="logo">⚡</div>
+      <span class="brand-name">PricePulse</span>
+    </div>
+    <div class="nav-right">
+      <div class="user-badge">Logged in as <span id="userName">...</span></div>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <div class="main">
+    <div class="welcome">
+      <h1>Good to see you, <span id="welcomeName">...</span> 👋</h1>
+      <p>// here's your pricing dashboard overview</p>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Products Tracked</div>
+        <div class="card-value">0</div>
+        <div class="card-sub">Add your first product →</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Price Alerts</div>
+        <div class="card-value">0</div>
+        <div class="card-sub">No alerts yet</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Competitors</div>
+        <div class="card-value">0</div>
+        <div class="card-sub">Start tracking competitors</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Revenue Uplift</div>
+        <div class="card-value">—</div>
+        <div class="card-sub">Add products to see data</div>
+      </div>
+    </div>
+
+    <div class="coming-soon">
+      <h2>🚀 Dashboard Coming Soon</h2>
+      <p>Product dashboard, price comparison, and AI recommendations are being built.<br/>You're successfully authenticated!</p>
+    </div>
+  </div>
+
+  <script>
+    // Check if user is logged in
+    const token = localStorage.getItem('pp_token');
+    const user  = JSON.parse(localStorage.getItem('pp_user') || 'null');
+
+    if (!token || !user) {
+      // Not logged in — redirect back to login
+      window.location.href = '/';
+    } else {
+      document.getElementById('userName').textContent    = user.email;
+      document.getElementById('welcomeName').textContent = user.name;
+    }
+
+    function logout() {
+      localStorage.removeItem('pp_token');
+      localStorage.removeItem('pp_user');
+      window.location.href = '/';
+    }
+  </script>
+
+</body>
+</html>

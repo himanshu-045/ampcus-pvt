@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PricePulse — Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #050a0e;
+      --surface: #0b1219;
+      --surface2: #0f1c27;
+      --surface3: #152230;
+      --border: rgba(0,255,180,0.10);
+      --border2: rgba(0,255,180,0.22);
+      --accent: #00ffb4;
+      --accent2: #00bfff;
+      --accent3: #ff5e5e;
+      --accent4: #ffa500;
+      --text: #dff0ea;
+      --muted: #4a7060;
+      --dim: #1e3828;
+      --mono: 'Space Mono', monospace;
+      --sans: 'Syne', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* ── SIDEBAR ─────────────────────────────────────── */
+    .sidebar {
+      width: 240px;
+      min-width: 240px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      position: relative;
+      z-index: 10;
+    }
+
+    .sidebar::after {
+      content: '';
+      position: absolute;
+      top: 0; right: 0; bottom: 0;
+      width: 1px;
+      background: linear-gradient(180deg, transparent, var(--accent), transparent);
+      opacity: 0.15;
+    }
+
+    .sb-brand {
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sb-logo {
+      width: 36px; height: 36px;
+      border: 1.5px solid var(--accent);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      box-shadow: 0 0 16px rgba(0,255,180,0.15);
+      flex-shrink: 0;
+    }
+
+    .sb-brand-text .name {
+      font-family: var(--mono);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .sb-brand-text .tag {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-top: 3px;
+    }
+
+    .sb-nav {
+      flex: 1;
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .sb-section-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      padding: 10px 8px 6px;
+      margin-top: 8px;
+    }
+
+    .sb-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.18s;
+      border: 1px solid transparent;
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      position: relative;
+    }
+
+    .sb-item:hover {
+      background: var(--surface2);
+      color: var(--text);
+      border-color: var(--border);
+    }
+
+    .sb-item.active {
+      background: rgba(0,255,180,0.07);
+      color: var(--accent);
+      border-color: rgba(0,255,180,0.18);
+    }
+
+    .sb-item.active::before {
+      content: '';
+      position: absolute;
+      left: -1px; top: 20%; bottom: 20%;
+      width: 2px;
+      background: var(--accent);
+      border-radius: 2px;
+    }
+
+    .sb-item .icon { font-size: 15px; width: 20px; text-align: center; }
+
+    .sb-badge {
+      margin-left: auto;
+      background: rgba(0,255,180,0.12);
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 10px;
+    }
+
+    .sb-footer {
+      padding: 16px 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .sb-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+    }
+
+    .sb-avatar {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700;
+      font-size: 13px;
+      color: #050a0e;
+      flex-shrink: 0;
+    }
+
+    .sb-user-info .uname {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 120px;
+    }
+
+    .sb-user-info .urole {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .logout-btn {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 16px;
+      padding: 4px;
+      transition: color 0.2s;
+      flex-shrink: 0;
+    }
+    .logout-btn:hover { color: var(--accent3); }
+
+    /* ── MAIN ────────────────────────────────────────── */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── TOPBAR ──────────────────────────────────────── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 32px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .topbar-left h1 {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .topbar-left p {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--accent);
+      background: rgba(0,255,180,0.07);
+      border: 1px solid rgba(0,255,180,0.2);
+      padding: 6px 12px;
+      border-radius: 20px;
+    }
+
+    .live-dot {
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: blink 1.5s ease infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.3; }
+    }
+
+    .topbar-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: var(--accent);
+      color: #050a0e;
+      border: none;
+      border-radius: 8px;
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .topbar-btn:hover { background: #00e6a2; transform: translateY(-1px); }
+
+    /* ── CONTENT ─────────────────────────────────────── */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .content::-webkit-scrollbar { width: 4px; }
+    .content::-webkit-scrollbar-track { background: transparent; }
+    .content::-webkit-scrollbar-thumb { background: var(--dim); border-radius: 2px; }
+
+    /* ── STAT CARDS ──────────────────────────────────── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s, transform 0.2s;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .stat-card:hover {
+      border-color: var(--border2);
+      transform: translateY(-2px);
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+    }
+
+    .stat-card.c1::before { background: linear-gradient(90deg, var(--accent), transparent); }
+    .stat-card.c2::before { background: linear-gradient(90deg, var(--accent2), transparent); }
+    .stat-card.c3::before { background: linear-gradient(90deg, var(--accent4), transparent); }
+    .stat-card.c4::before { background: linear-gradient(90deg, var(--accent3), transparent); }
+
+    .stat-card:nth-child(1) { animation-delay: 0.05s; }
+    .stat-card:nth-child(2) { animation-delay: 0.10s; }
+    .stat-card:nth-child(3) { animation-delay: 0.15s; }
+    .stat-card:nth-child(4) { animation-delay: 0.20s; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .stat-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+
+    .stat-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+
+    .stat-icon { font-size: 18px; opacity: 0.6; }
+
+    .stat-value {
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .stat-card.c1 .stat-value { color: var(--accent); }
+    .stat-card.c2 .stat-value { color: var(--accent2); }
+    .stat-card.c3 .stat-value { color: var(--accent4); }
+    .stat-card.c4 .stat-value { color: var(--accent3); }
+
+    .stat-change {
+      font-family: var(--mono);
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .stat-change.up   { color: var(--accent); }
+    .stat-change.down { color: var(--accent3); }
+    .stat-change.neu  { color: var(--muted); }
+
+    /* ── TWO COL LAYOUT ──────────────────────────────── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 16px;
+    }
+
+    /* ── PANEL ───────────────────────────────────────── */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      animation: fadeUp 0.4s ease 0.2s both;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-title {
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-title .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .panel-action {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+    .panel-action:hover { opacity: 1; }
+
+    /* ── CHART AREA ──────────────────────────────────── */
+    .chart-area {
+      padding: 20px;
+      height: 240px;
+      position: relative;
+    }
+
+    .chart-labels {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .chart-wrap {
+      position: relative;
+      height: 180px;
+    }
+
+    canvas#priceChart {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    /* ── PRODUCT TABLE ───────────────────────────────── */
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      padding: 10px 20px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+      cursor: pointer;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--surface2); }
+
+    tbody td {
+      padding: 14px 20px;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .prod-name { font-weight: 700; }
+    .prod-cat {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .price-curr { font-family: var(--mono); font-weight: 700; }
+    .price-comp { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+    .tag {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .tag.up     { background: rgba(0,255,180,0.1);  color: var(--accent);  border: 1px solid rgba(0,255,180,0.2); }
+    .tag.down   { background: rgba(255,94,94,0.1);  color: var(--accent3); border: 1px solid rgba(255,94,94,0.2); }
+    .tag.stable { background: rgba(0,191,255,0.1);  color: var(--accent2); border: 1px solid rgba(0,191,255,0.2); }
+    .tag.watch  { background: rgba(255,165,0,0.1);  color: var(--accent4); border: 1px solid rgba(255,165,0,0.2); }
+
+    .rec-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .rec-pill.raise { background: rgba(0,255,180,0.08); color: var(--accent); border: 1px solid rgba(0,255,180,0.2); }
+    .rec-pill.lower { background: rgba(255,94,94,0.08);  color: var(--accent3); border: 1px solid rgba(255,94,94,0.2); }
+    .rec-pill.hold  { background: rgba(0,191,255,0.08);  color: var(--accent2); border: 1px solid rgba(0,191,255,0.2); }
+
+    /* ── ALERTS PANEL ────────────────────────────────── */
+    .alerts-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .alert-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+
+    .alert-item:last-child { border-bottom: none; }
+    .alert-item:hover { background: var(--surface2); }
+
+    .alert-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      margin-top: 4px;
+      flex-shrink: 0;
+    }
+
+    .alert-dot.red  { background: var(--accent3); box-shadow: 0 0 6px rgba(255,94,94,0.5); }
+    .alert-dot.grn  { background: var(--accent);  box-shadow: 0 0 6px rgba(0,255,180,0.5); }
+    .alert-dot.ylw  { background: var(--accent4); box-shadow: 0 0 6px rgba(255,165,0,0.5); }
+    .alert-dot.blu  { background: var(--accent2); box-shadow: 0 0 6px rgba(0,191,255,0.5); }
+
+    .alert-body .a-title {
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
+
+    .alert-body .a-desc {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .alert-time {
+      margin-left: auto;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--dim);
+      flex-shrink: 0;
+    }
+
+    /* ── BOTTOM ROW ──────────────────────────────────── */
+    .bottom-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      animation: fadeUp 0.4s ease 0.3s both;
+    }
+
+    /* ── COMPETITOR BARS ─────────────────────────────── */
+    .comp-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .comp-item {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .comp-item:last-child { border-bottom: none; }
+
+    .comp-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .comp-name { font-size: 13px; font-weight: 700; }
+    .comp-price { font-family: var(--mono); font-size: 13px; color: var(--accent); }
+
+    .comp-bar-wrap {
+      height: 4px;
+      background: var(--surface2);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .comp-bar {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 1s ease;
+    }
+
+    /* ── MINI SPARK ──────────────────────────────────── */
+    .spark-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .spark-row:last-child { border-bottom: none; }
+
+    .spark-info { flex: 1; }
+    .spark-name { font-size: 12px; font-weight: 700; margin-bottom: 2px; }
+    .spark-val  { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+
+    .spark-svg { flex-shrink: 0; }
+
+    .spark-change {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      min-width: 50px;
+      text-align: right;
+    }
+
+    .spark-change.up   { color: var(--accent); }
+    .spark-change.down { color: var(--accent3); }
+
+    /* ── SCROLLBAR ───────────────────────────────────── */
+    * { scrollbar-width: thin; scrollbar-color: var(--dim) transparent; }
+
+    /* ── RESPONSIVE ──────────────────────────────────── */
+    @media (max-width: 1200px) {
+      .stat-grid { grid-template-columns: repeat(2, 1fr); }
+      .two-col   { grid-template-columns: 1fr; }
+      .bottom-row{ grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .stat-grid { grid-template-columns: 1fr 1fr; }
+      .content { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ──────────────────────────────────────── -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-logo">⚡</div>
+    <div class="sb-brand-text">
+      <div class="name">PricePulse</div>
+      <div class="tag">Pricing Engine</div>
+    </div>
+  </div>
+
+  <nav class="sb-nav">
+    <div class="sb-section-label">Main</div>
+    <a class="sb-item active" href="dashboard.html">
+      <span class="icon">📊</span> Dashboard
+    </a>
+    <a class="sb-item" href="track.html">
+      <span class="icon">📦</span> Track Products
+      <!-- <span class="sb-badge">12</span> -->
+    </a>
+    <a class="sb-item" href="compare.html"><span class="icon">⚖️</span> Compare Products</a>
+    <!-- <a class="sb-item" href="#">
+      <span class="icon">💡</span> Recommendations
+      <span class="sb-badge">3</span>
+    </a> -->
+
+    <div class="sb-section-label">Analytics</div>
+    <a class="sb-item" href="track.html">
+      <span class="icon">📈</span> Price History
+    </a>
+    <a class="sb-item" href="#">
+      <span class="icon">🎯</span> Demand Model
+    </a>
+    <a class="sb-item" href="#">
+      <span class="icon">⚠️</span> Alerts
+      <!-- <span class="sb-badge">5</span> -->
+    </a>
+
+    <div class="sb-section-label">Settings</div>
+    <a class="sb-item" href="#">
+      <span class="icon">⚙️</span> Settings
+    </a>
+  </nav>
+
+  <div class="sb-footer">
+    <div class="sb-user">
+      <div class="sb-avatar" id="sidebarAvatar">H</div>
+      <div class="sb-user-info">
+        <div class="uname" id="sidebarName">Loading...</div>
+        <div class="urole" id="sidebarRole">user</div>
+      </div>
+      <button class="logout-btn" onclick="logout()" title="Logout">⏻</button>
+    </div>
+  </div>
+</aside>
+
+<!-- ── MAIN ──────────────────────────────────────────── -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>Dashboard <span style="color:var(--accent)">Overview</span></h1>
+      <p id="topbarGreeting">// loading...</p>
+    </div>
+    <div class="topbar-right">
+      <div class="live-badge">
+        <div class="live-dot"></div>
+        Live Tracking
+      </div>
+      <button class="topbar-btn" onclick="window.location.href='track.html?addProduct=1'">+ Add Product</button>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- STAT CARDS -->
+    <div class="stat-grid">
+      <div class="stat-card c1">
+        <div class="stat-top">
+          <span class="stat-label">Products Tracked</span>
+          <span class="stat-icon">📦</span>
+        </div>
+        <div class="stat-value">12</div>
+        <div class="stat-change up">▲ 3 added this week</div>
+      </div>
+      <div class="stat-card c2">
+        <div class="stat-top">
+          <span class="stat-label">Avg Price Delta</span>
+          <span class="stat-icon">📉</span>
+        </div>
+        <div class="stat-value">−4.2%</div>
+        <div class="stat-change down">▼ vs competitors</div>
+      </div>
+      <div class="stat-card c3">
+        <div class="stat-top">
+          <span class="stat-label">Revenue Uplift</span>
+          <span class="stat-icon">💰</span>
+        </div>
+        <div class="stat-value">+12.4%</div>
+        <div class="stat-change up">▲ from AI pricing</div>
+      </div>
+      <div class="stat-card c4">
+        <div class="stat-top">
+          <span class="stat-label">Active Alerts</span>
+          <span class="stat-icon">🔔</span>
+        </div>
+        <div class="stat-value">5</div>
+        <div class="stat-change neu">● 2 critical, 3 info</div>
+      </div>
+    </div>
+
+    <!-- CHART + ALERTS -->
+    <div class="two-col">
+
+      <!-- Price Trend Chart -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">
+            <div class="dot"></div>
+            Price Trend — Last 30 Days
+          </div>
+          <button class="panel-action">View all →</button>
+        </div>
+        <div class="chart-area">
+          <canvas id="priceChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Alerts -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">
+            <div class="dot" style="background:var(--accent3)"></div>
+            Live Alerts
+          </div>
+          <button class="panel-action">Clear all</button>
+        </div>
+        <div class="alerts-list">
+          <div class="alert-item">
+            <div class="alert-dot red"></div>
+            <div class="alert-body">
+              <div class="a-title">Competitor undercut detected</div>
+              <div class="a-desc">Amazon dropped iPhone 15 by ₹2,000 below your price</div>
+            </div>
+            <div class="alert-time">2m ago</div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-dot grn"></div>
+            <div class="alert-body">
+              <div class="a-title">Price raise opportunity</div>
+              <div class="a-desc">Sony WH-1000XM5 demand up 34% — raise by ₹500</div>
+            </div>
+            <div class="alert-time">15m ago</div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-dot ylw"></div>
+            <div class="alert-body">
+              <div class="a-title">Stock low — adjust pricing</div>
+              <div class="a-desc">MacBook Air M2 stock at 8 units, consider scarcity pricing</div>
+            </div>
+            <div class="alert-time">1h ago</div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-dot blu"></div>
+            <div class="alert-body">
+              <div class="a-title">Weekly report ready</div>
+              <div class="a-desc">Revenue uplift report for March 2026 is ready</div>
+            </div>
+            <div class="alert-time">3h ago</div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-dot ylw"></div>
+            <div class="alert-body">
+              <div class="a-title">Seasonal demand shift</div>
+              <div class="a-desc">Summer products trending — update pricing strategy</div>
+            </div>
+            <div class="alert-time">5h ago</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUCT TABLE -->
+    <div class="panel" style="animation-delay:0.25s">
+      <div class="panel-head">
+        <div class="panel-title">
+          <div class="dot" style="background:var(--accent2)"></div>
+          Product Pricing Intelligence
+        </div>
+        <button class="panel-action">Export CSV →</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Your Price</th>
+              <th>Competitor Avg</th>
+              <th>Trend</th>
+              <th>AI Recommendation</th>
+              <th>Confidence</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div class="prod-name">iPhone 15 Pro 256GB</div>
+                <div class="prod-cat">Electronics · Apple</div>
+              </td>
+              <td>
+                <div class="price-curr">₹1,34,900</div>
+                <div class="price-comp">Comp: ₹1,32,900</div>
+              </td>
+              <td><span style="font-family:var(--mono);font-size:13px">₹1,32,900</span></td>
+              <td><span class="tag down">▼ Falling</span></td>
+              <td><span class="rec-pill lower">↓ Lower ₹1,900</span></td>
+              <td><span style="font-family:var(--mono);font-size:12px;color:var(--accent)">94%</span></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="prod-name">Sony WH-1000XM5</div>
+                <div class="prod-cat">Audio · Sony</div>
+              </td>
+              <td>
+                <div class="price-curr">₹26,990</div>
+                <div class="price-comp">Comp: ₹28,500</div>
+              </td>
+              <td><span style="font-family:var(--mono);font-size:13px">₹28,500</span></td>
+              <td><span class="tag up">▲ Rising</span></td>
+              <td><span class="rec-pill raise">↑ Raise ₹1,500</span></td>
+              <td><span style="font-family:var(--mono);font-size:12px;color:var(--accent)">87%</span></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="prod-name">MacBook Air M2</div>
+                <div class="prod-cat">Laptops · Apple</div>
+              </td>
+              <td>
+                <div class="price-curr">₹1,14,900</div>
+                <div class="price-comp">Comp: ₹1,14,500</div>
+              </td>
+              <td><span style="font-family:var(--mono);font-size:13px">₹1,14,500</span></td>
+              <td><span class="tag stable">● Stable</span></td>
+              <td><span class="rec-pill hold">◆ Hold</span></td>
+              <td><span style="font-family:var(--mono);font-size:12px;color:var(--accent2)">79%</span></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="prod-name">Samsung 65" QLED</div>
+                <div class="prod-cat">TVs · Samsung</div>
+              </td>
+              <td>
+                <div class="price-curr">₹89,990</div>
+                <div class="price-comp">Comp: ₹94,000</div>
+              </td>
+              <td><span style="font-family:var(--mono);font-size:13px">₹94,000</span></td>
+              <td><span class="tag up">▲ Rising</span></td>
+              <td><span class="rec-pill raise">↑ Raise ₹3,000</span></td>
+              <td><span style="font-family:var(--mono);font-size:12px;color:var(--accent)">91%</span></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="prod-name">OnePlus 12 256GB</div>
+                <div class="prod-cat">Electronics · OnePlus</div>
+              </td>
+              <td>
+                <div class="price-curr">₹64,999</div>
+                <div class="price-comp">Comp: ₹62,000</div>
+              </td>
+              <td><span style="font-family:var(--mono);font-size:13px">₹62,000</span></td>
+              <td><span class="tag watch">⚠ Watch</span></td>
+              <td><span class="rec-pill lower">↓ Lower ₹2,000</span></td>
+              <td><span style="font-family:var(--mono);font-size:12px;color:var(--accent4)">72%</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- BOTTOM ROW -->
+    <div class="bottom-row">
+
+      <!-- Competitor Benchmarks -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">
+            <div class="dot" style="background:var(--accent4)"></div>
+            Competitor Benchmarks
+          </div>
+        </div>
+        <div class="comp-list">
+          <div class="comp-item">
+            <div class="comp-top">
+              <span class="comp-name">Amazon</span>
+              <span class="comp-price">Avg ₹98,200</span>
+            </div>
+            <div class="comp-bar-wrap">
+              <div class="comp-bar" style="width:88%;background:linear-gradient(90deg,var(--accent),var(--accent2))"></div>
+            </div>
+          </div>
+          <div class="comp-item">
+            <div class="comp-top">
+              <span class="comp-name">Flipkart</span>
+              <span class="comp-price">Avg ₹96,500</span>
+            </div>
+            <div class="comp-bar-wrap">
+              <div class="comp-bar" style="width:82%;background:linear-gradient(90deg,var(--accent2),#0080cc)"></div>
+            </div>
+          </div>
+          <div class="comp-item">
+            <div class="comp-top">
+              <span class="comp-name">Croma</span>
+              <span class="comp-price">Avg ₹1,01,000</span>
+            </div>
+            <div class="comp-bar-wrap">
+              <div class="comp-bar" style="width:95%;background:linear-gradient(90deg,var(--accent4),#cc7700)"></div>
+            </div>
+          </div>
+          <div class="comp-item">
+            <div class="comp-top">
+              <span class="comp-name">Reliance Digital</span>
+              <span class="comp-price">Avg ₹99,800</span>
+            </div>
+            <div class="comp-bar-wrap">
+              <div class="comp-bar" style="width:91%;background:linear-gradient(90deg,var(--accent3),#cc2200)"></div>
+            </div>
+          </div>
+          <div class="comp-item">
+            <div class="comp-top">
+              <span class="comp-name">Your Store</span>
+              <span class="comp-price" style="color:var(--accent)">Avg ₹94,200</span>
+            </div>
+            <div class="comp-bar-wrap">
+              <div class="comp-bar" style="width:78%;background:var(--accent)"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Demand Sparklines -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">
+            <div class="dot" style="background:var(--accent2)"></div>
+            Demand Signals
+          </div>
+        </div>
+        <div>
+          <div class="spark-row">
+            <div class="spark-info">
+              <div class="spark-name">iPhone 15 Pro</div>
+              <div class="spark-val">High demand</div>
+            </div>
+            <svg class="spark-svg" width="80" height="28" viewBox="0 0 80 28">
+              <polyline points="0,20 13,18 26,14 39,16 52,10 65,8 80,4" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <div class="spark-change up">+34%</div>
+          </div>
+          <div class="spark-row">
+            <div class="spark-info">
+              <div class="spark-name">Sony WH-1000XM5</div>
+              <div class="spark-val">Rising demand</div>
+            </div>
+            <svg class="spark-svg" width="80" height="28" viewBox="0 0 80 28">
+              <polyline points="0,22 13,20 26,22 39,18 52,14 65,12 80,8" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <div class="spark-change up">+21%</div>
+          </div>
+          <div class="spark-row">
+            <div class="spark-info">
+              <div class="spark-name">MacBook Air M2</div>
+              <div class="spark-val">Stable demand</div>
+            </div>
+            <svg class="spark-svg" width="80" height="28" viewBox="0 0 80 28">
+              <polyline points="0,14 13,12 26,15 39,13 52,14 65,13 80,14" fill="none" stroke="var(--accent2)" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <div class="spark-change up">+2%</div>
+          </div>
+          <div class="spark-row">
+            <div class="spark-info">
+              <div class="spark-name">Samsung 65" QLED</div>
+              <div class="spark-val">Dropping</div>
+            </div>
+            <svg class="spark-svg" width="80" height="28" viewBox="0 0 80 28">
+              <polyline points="0,6 13,8 26,10 39,12 52,16 65,18 80,22" fill="none" stroke="var(--accent3)" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <div class="spark-change down">−11%</div>
+          </div>
+          <div class="spark-row">
+            <div class="spark-info">
+              <div class="spark-name">OnePlus 12</div>
+              <div class="spark-val">Volatile</div>
+            </div>
+            <svg class="spark-svg" width="80" height="28" viewBox="0 0 80 28">
+              <polyline points="0,14 13,6 26,18 39,8 52,20 65,10 80,16" fill="none" stroke="var(--accent4)" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <div class="spark-change down">−5%</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- end content -->
+</div><!-- end main -->
+
+<script>
+  // ── Auth Guard ──────────────────────────────────────
+  const token = localStorage.getItem('pp_token');
+  const user  = JSON.parse(localStorage.getItem('pp_user') || 'null');
+
+  if (!token || !user) {
+    window.location.href = '/';
+  } else {
+    // Populate user info
+    const name = user.name || 'User';
+    const role = user.role || 'user';
+
+    document.getElementById('sidebarName').textContent  = name;
+    document.getElementById('sidebarRole').textContent  = role;
+    document.getElementById('sidebarAvatar').textContent = name.charAt(0).toUpperCase();
+
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+    document.getElementById('topbarGreeting').textContent = `// ${greeting}, ${name} — ${new Date().toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long' })}`;
+  }
+
+  function logout() {
+    localStorage.removeItem('pp_token');
+    localStorage.removeItem('pp_user');
+    window.location.href = '/';
+  }
+
+  // ── Price Trend Chart ───────────────────────────────
+  const canvas = document.getElementById('priceChart');
+  const ctx    = canvas.getContext('2d');
+
+  function resizeCanvas() {
+    const wrap = canvas.parentElement;
+    canvas.width  = wrap.clientWidth;
+    canvas.height = wrap.clientHeight;
+    drawChart();
+  }
+
+  const days   = ['Mar 1','Mar 5','Mar 9','Mar 13','Mar 17','Mar 21','Mar 25','Mar 27'];
+  const yours  = [132000, 134000, 133500, 135000, 134900, 136000, 134900, 134900];
+  const comp   = [130000, 131000, 133000, 132500, 132000, 133000, 132900, 132900];
+
+  function drawChart() {
+    const W = canvas.width, H = canvas.height;
+    const PAD = { top: 20, right: 20, bottom: 36, left: 70 };
+    const cW = W - PAD.left - PAD.right;
+    const cH = H - PAD.top  - PAD.bottom;
+
+    ctx.clearRect(0, 0, W, H);
+
+    const allVals = [...yours, ...comp];
+    const minV = Math.min(...allVals) - 2000;
+    const maxV = Math.max(...allVals) + 2000;
+
+    const xPos = i => PAD.left + (i / (days.length - 1)) * cW;
+    const yPos = v => PAD.top  + cH - ((v - minV) / (maxV - minV)) * cH;
+
+    // Grid lines
+    for (let i = 0; i <= 4; i++) {
+      const y = PAD.top + (i / 4) * cH;
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(0,255,180,0.06)';
+      ctx.lineWidth = 1;
+      ctx.moveTo(PAD.left, y);
+      ctx.lineTo(PAD.left + cW, y);
+      ctx.stroke();
+
+      const val = maxV - ((maxV - minV) * i / 4);
+      ctx.fillStyle = 'rgba(90,120,112,0.8)';
+      ctx.font = '10px Space Mono, monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText('₹' + (val / 1000).toFixed(0) + 'K', PAD.left - 8, y + 4);
+    }
+
+    // X labels
+    ctx.fillStyle = 'rgba(90,120,112,0.8)';
+    ctx.font = '10px Space Mono, monospace';
+    ctx.textAlign = 'center';
+    days.forEach((d, i) => {
+      ctx.fillText(d, xPos(i), H - 8);
+    });
+
+    // Draw line
+    function drawLine(data, color, dashed) {
+      ctx.beginPath();
+      if (dashed) ctx.setLineDash([5, 4]);
+      else        ctx.setLineDash([]);
+      ctx.strokeStyle = color;
+      ctx.lineWidth   = 2;
+      ctx.lineJoin    = 'round';
+      ctx.lineCap     = 'round';
+      data.forEach((v, i) => {
+        if (i === 0) ctx.moveTo(xPos(i), yPos(v));
+        else         ctx.lineTo(xPos(i), yPos(v));
+      });
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // Fill gradient under your line
+    const grad = ctx.createLinearGradient(0, PAD.top, 0, PAD.top + cH);
+    grad.addColorStop(0,   'rgba(0,255,180,0.18)');
+    grad.addColorStop(1,   'rgba(0,255,180,0)');
+    ctx.beginPath();
+    yours.forEach((v, i) => {
+      if (i === 0) ctx.moveTo(xPos(i), yPos(v));
+      else         ctx.lineTo(xPos(i), yPos(v));
+    });
+    ctx.lineTo(xPos(yours.length - 1), PAD.top + cH);
+    ctx.lineTo(xPos(0), PAD.top + cH);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    drawLine(comp,  'rgba(0,191,255,0.55)', true);
+    drawLine(yours, '#00ffb4', false);
+
+    // Dots on your line
+    yours.forEach((v, i) => {
+      ctx.beginPath();
+      ctx.arc(xPos(i), yPos(v), 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#00ffb4';
+      ctx.fill();
+      ctx.strokeStyle = '#050a0e';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    });
+
+    // Legend
+    ctx.font = '10px Space Mono, monospace';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#00ffb4';
+    ctx.fillRect(PAD.left, 6, 12, 3);
+    ctx.fillText('Your Price', PAD.left + 16, 12);
+    ctx.fillStyle = 'rgba(0,191,255,0.55)';
+    ctx.fillRect(PAD.left + 100, 6, 12, 3);
+    ctx.fillStyle = 'rgba(0,191,255,0.7)';
+    ctx.fillText('Competitor Avg', PAD.left + 116, 12);
+  }
+
+  window.addEventListener('resize', resizeCanvas);
+  setTimeout(resizeCanvas, 50);
+</script>
+
+</body>
+</html>
